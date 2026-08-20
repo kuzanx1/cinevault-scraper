@@ -1,0 +1,61 @@
+name: Bulk resolve links (تجهيز جماعي)
+
+# يجهّز روابط الكتالوج كامل مسبقًا بدل ما ينتظر زائر يكتشف رابط ميت.
+#
+# ليش نقدر نشغّله بهالحجم: الريبو عام، ودقائق GitHub Actions للريبوهات
+# العامة غير محدودة. نوزّع الشغل على 20 job متوازي (أقصى تزامن مسموح
+# بالخطة المجانية)، فبدل ما ياخذ ساعات على التوالي يخلص بجزء بسيط منها.
+#
+# ما نخزّن أي فيديو — بس نص الرابط بقاعدة البيانات، فالتخزين يبقى تافه.
+
+on:
+  workflow_dispatch:
+    inputs:
+      only_missing:
+        description: 'يعالج بس اللي ماله رابط شغّال (1) أو الكل (0)'
+        required: false
+        default: '1'
+      max_minutes:
+        description: 'سقف وقت لكل job بالدقايق'
+        required: false
+        default: '300'
+  schedule:
+    # مرة بالأسبوع عشان يمسك العناوين اللي ماتت روابطها ومحد زارها
+    - cron: '0 2 * * 0'
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # كاش متصفح puppeteer (~200 م.ب) — بدونه كل job ينزله من جديد
+      - name: Cache Puppeteer browser download
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve shard ${{ matrix.shard }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: '20'
+          ONLY_MISSING: ${{ github.event.inputs.only_missing || '1' }}
+          MAX_RUN_MINUTES: ${{ github.event.inputs.max_minutes || '300' }}
+        run: node run-bulk-resolve.js
