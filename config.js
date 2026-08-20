@@ -12,6 +12,10 @@ const CONFIG = {
     'streamwish', 'filelions', 'doodstream', 'streamtape',
     'uqload', 'mixdrop', 'vidhide', 'filemoon', 'upstream',
     'lulustream', 'earnvids', 'updown', 'vidcloud',
+    // ok.ru (Odnoklassniki) — منصة فيديو ضخمة وشرعية، embed API رسمي
+    // عندها. تحققنا فعليًا: يرجع 200 لأي referer (حتى موقعنا)، عكس
+    // vidtube.one اللي يرفض صراحة أي دومين غير topcinema.fan
+    'ok.ru',
   ],
   // ملاحظة: جربنا نضيف vidtube (VideoTube) هنا لكن رجّعناها — تحقق
   // مباشر (fetch بـReferer=موقعنا) رجع "Video embed restricted for
