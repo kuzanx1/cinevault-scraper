@@ -1,0 +1,19 @@
+{
+  "name": "cinevault-scraper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "خدمة مستقلة: تحديث روابط m3u8 المنتهية بقاعدة بيانات cinevault (topcinema فقط) + استيراد عناوين جديدة",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check-once": "node run-scheduled-check.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "puppeteer": "^25.1.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
