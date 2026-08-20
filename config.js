@@ -2,12 +2,6 @@
 const path = require('path')
 
 const CONFIG = {
-  // topcinema فقط — faselhd أُزيل نهائيًا بطلب من المالك
-  source: {
-    name: 'topcinema',
-    searchUrl: 'https://web4.topcinema.fan/?s={query}',
-  },
-
   blockedDomains: [
     'googlesyndication', 'doubleclick', 'googletagmanager',
     'google-analytics', 'facebook.com/tr', 'hotjar',
@@ -15,8 +9,6 @@ const CONFIG = {
   ],
 
   pageTimeout: 20000,
-  waitAfterClick: 3000,
-  waitAfterAll: 2000,
   // قبل ما ينتهي التوكن الفعلي بهالمدة، نعتبره "منتهي" ونجدده مسبقًا
   // بدل ما ننتظر يموت فعليًا والزائر يشوفه ميت
   tokenExpiryBuffer: 2 * 60 * 60,
@@ -46,7 +38,10 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 // الموثوق هو isServerAlive (طلب HTTP فعلي)، هذا يستخدم كمرشّح أولي بس
 // عشان ما نسوي HTTP check على كل رابط كل مرة.
 function isTokenExpired(url) {
-  if (!url || !url.includes('.m3u8')) return true
+  if (!url) return true
+  // ملفات مباشرة (زي mp4 اكوام) ما فيها توكن نقدر نحسبه من شكل الرابط —
+  // نعتمد على فحص حي (isServerAlive) بدل التخمين، مو نعتبرها منتهية دايمًا
+  if (!url.includes('.m3u8')) return false
 
   const eMatch = url.match(/[?&]e=(\d+)/)
   if (!eMatch) return false // ما فيه معلومة مدة — خله يعتمد على isServerAlive
@@ -74,14 +69,17 @@ function isTokenExpired(url) {
 // مو حساب الأرقام بالرابط (بعض الروابط تموت خلال ثواني من انسحابها
 // لأسباب غير مرتبطة بالمدة المكتوبة — احتمال ربط بجلسة/IP السحب).
 async function isServerAlive(url, refererUrl, timeoutMs = 8000) {
-  if (!url || !url.includes('.m3u8')) return false
+  if (!url || !/^https?:\/\//i.test(url)) return false
   try {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
+    // ملفات مباشرة كبيرة (mp4 اكوام) — HEAD يكفي نتأكد الرابط شغال
+    // بدون ما نحمّل أي بايت فعلي منه
+    const method = url.includes('.m3u8') ? 'GET' : 'HEAD'
     const res = await fetch(url, {
-      method: 'GET',
+      method,
       headers: {
-        Referer: refererUrl || 'https://web5.topcinema.fan/',
+        ...(refererUrl ? { Referer: refererUrl } : {}),
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
       signal: controller.signal,

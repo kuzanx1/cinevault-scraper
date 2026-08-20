@@ -101,7 +101,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     browser: browser?.connected ? 'connected' : 'disconnected',
-    source: 'topcinema',
+    source: 'akwam',
     scheduler: isRunningScheduledCheck ? 'running' : 'idle',
     lastRunStartedAt,
     lastRunFinishedAt,
