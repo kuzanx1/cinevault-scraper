@@ -8,24 +8,6 @@ const CONFIG = {
     searchUrl: 'https://web4.topcinema.fan/?s={query}',
   },
 
-  embedDomains: [
-    'streamwish', 'filelions', 'doodstream', 'streamtape',
-    'uqload', 'mixdrop', 'vidhide', 'filemoon', 'upstream',
-    'lulustream', 'earnvids', 'updown', 'vidcloud',
-    // ok.ru (Odnoklassniki) — منصة فيديو ضخمة وشرعية، embed API رسمي
-    // عندها. تحققنا فعليًا: يرجع 200 لأي referer (حتى موقعنا)، عكس
-    // vidtube.one اللي يرفض صراحة أي دومين غير topcinema.fan
-    'ok.ru',
-  ],
-  // ملاحظة: جربنا نضيف vidtube (VideoTube) هنا لكن رجّعناها — تحقق
-  // مباشر (fetch بـReferer=موقعنا) رجع "Video embed restricted for
-  // this domain": vidtube.one يتحقق من دومين الإحالة صراحة وما يقبل
-  // إلا topcinema.fan. يعني نقدر نلتقط رابطه لكن ما يشتغل أبدًا لما
-  // نعرضه بموقعنا — تسجيله كembed يعطي "نجاح" وهمي يوقف الزائر بدل
-  // ما يجربه سيرفر حقيقي. لو حبينا نستخدمه لازم نبني بروكسي HTML كامل
-  // (زي hls-proxy) يجيبه من سيرفرنا بReferer=topcinema.fan ويعيد
-  // تقديمه — مجهود أكبر بكثير، ما سويناه لين الحين
-
   blockedDomains: [
     'googlesyndication', 'doubleclick', 'googletagmanager',
     'google-analytics', 'facebook.com/tr', 'hotjar',
@@ -115,10 +97,6 @@ function isBlocked(url) {
   return CONFIG.blockedDomains.some((d) => url.includes(d))
 }
 
-function isEmbedDomain(url) {
-  return CONFIG.embedDomains.some((d) => url.includes(d))
-}
-
 function cleanTitleForSearch(title, year) {
   if (!title) return ''
   let clean = title.replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim()
@@ -158,7 +136,6 @@ module.exports = {
   isTokenExpired,
   isServerAlive,
   isBlocked,
-  isEmbedDomain,
   cleanTitleForSearch,
   sortByYear,
   groupExpiredByTitle,
