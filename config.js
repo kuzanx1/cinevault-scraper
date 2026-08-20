@@ -12,11 +12,15 @@ const CONFIG = {
     'streamwish', 'filelions', 'doodstream', 'streamtape',
     'uqload', 'mixdrop', 'vidhide', 'filemoon', 'upstream',
     'lulustream', 'earnvids', 'updown', 'vidcloud',
-    // videotube (topcinema's default/أول سيرفر، مو محتاج ضغطة — يتحمّل
-    // تلقائي مع الصفحة) — مفقود من القائمة من البداية فكنا نتجاهله
-    // بالكامل رغم إنه أوثق سيرفر عند المالك من التجربة القديمة
-    'vidtube',
   ],
+  // ملاحظة: جربنا نضيف vidtube (VideoTube) هنا لكن رجّعناها — تحقق
+  // مباشر (fetch بـReferer=موقعنا) رجع "Video embed restricted for
+  // this domain": vidtube.one يتحقق من دومين الإحالة صراحة وما يقبل
+  // إلا topcinema.fan. يعني نقدر نلتقط رابطه لكن ما يشتغل أبدًا لما
+  // نعرضه بموقعنا — تسجيله كembed يعطي "نجاح" وهمي يوقف الزائر بدل
+  // ما يجربه سيرفر حقيقي. لو حبينا نستخدمه لازم نبني بروكسي HTML كامل
+  // (زي hls-proxy) يجيبه من سيرفرنا بReferer=topcinema.fan ويعيد
+  // تقديمه — مجهود أكبر بكثير، ما سويناه لين الحين
 
   blockedDomains: [
     'googlesyndication', 'doubleclick', 'googletagmanager',
