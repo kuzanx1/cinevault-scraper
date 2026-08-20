@@ -1,0 +1,49 @@
+name: Refresh expired stream links (general sweep)
+
+# هذا مسح عام احتياطي بس — المسؤول الأساسي عن التحديث صار
+# refresh-single.yml (يتحدث فقط العنوان اللي زائر حقيقي فتحه، عبر
+# /api/refresh-server). هذا الملف يمسك بس الحالات اللي محد زارها بعد
+# لكن قربت تنتهي، عشان تكون جاهزة قبل أول زائر. لأنه ثانوي، وتيرته قليلة
+# عمدًا عشان يخلي أغلب ميزانية GitHub Actions المجانية للتحديث الفوري.
+on:
+  schedule:
+    - cron: '0 */12 * * *' # مرتين باليوم بس
+  workflow_dispatch: {} # تشغيل يدوي من تبويب Actions بالـ GitHub — مجاني برضو، يفيد لما تبي تسرّع التنظيف
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # كاش المتصفح اللي puppeteer ينزله (~200 م.ب) — بدونه كل تشغيلة
+      # تنزله من جديد وتاكل وقت اشتغال مجاني بلا داعي
+      - name: Cache Puppeteer browser download
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run scheduled link check
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MAX_RUN_MINUTES: '4'
+        run: node run-scheduled-check.js
+
+      - name: Upload run report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: refresh-report-${{ github.run_number }}
+          path: reports/latest-run.json
+          retention-days: 14

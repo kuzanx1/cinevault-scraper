@@ -1,0 +1,42 @@
+name: Refresh single title on demand
+
+# يُشغّل من الموقع نفسه (POST /api/refresh-server) لما زائر يفتح صفحة
+# عنوان رابطه ميت — يحدث هذا العنوان بس، مو كل القاعدة. أرخص وأسرع.
+on:
+  workflow_dispatch:
+    inputs:
+      title_id:
+        description: 'titles.id'
+        required: true
+      episode_id:
+        description: 'episodes.id (اختياري — بس للمسلسلات)'
+        required: false
+
+jobs:
+  refresh-one:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Cache Puppeteer browser download
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Refresh this title
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TITLE_ID: ${{ inputs.title_id }}
+          EPISODE_ID: ${{ inputs.episode_id }}
+        run: node refresh-one.js
