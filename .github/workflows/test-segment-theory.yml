@@ -1,0 +1,20 @@
+name: TEMP - test segment vs master block theory
+
+on:
+  workflow_dispatch:
+    inputs:
+      master_url:
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node test-segment-theory.js
+        env:
+          MASTER_URL: ${{ inputs.master_url }}
