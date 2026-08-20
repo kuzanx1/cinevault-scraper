@@ -12,6 +12,10 @@ const CONFIG = {
     'streamwish', 'filelions', 'doodstream', 'streamtape',
     'uqload', 'mixdrop', 'vidhide', 'filemoon', 'upstream',
     'lulustream', 'earnvids', 'updown', 'vidcloud',
+    // videotube (topcinema's default/أول سيرفر، مو محتاج ضغطة — يتحمّل
+    // تلقائي مع الصفحة) — مفقود من القائمة من البداية فكنا نتجاهله
+    // بالكامل رغم إنه أوثق سيرفر عند المالك من التجربة القديمة
+    'vidtube',
   ],
 
   blockedDomains: [
